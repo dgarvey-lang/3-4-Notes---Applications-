@@ -1,0 +1,1141 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>3-4 Notes Applications</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+/* Layout: sticky header with progress dots; two columns — question work on the left, whiteboard on the right (stacks on phones). */
+:root {
+  --bg: #f2f4f8;
+  --surface: #ffffff;
+  --surface-2: #f7f8fb;
+  --ink: #18202c;
+  --muted: #586273;
+  --line: #d8dde6;
+  --accent: #2453c4;
+  --accent-soft: #e6edfb;
+  --accent-ink: #ffffff;
+  --good: #1b7543;
+  --good-bg: #e2f3e9;
+  --bad: #b3232c;
+  --bad-bg: #fbe6e7;
+  --warn: #8f5600;
+  --warn-bg: #fcf0d9;
+  --shadow: 0 1px 2px rgba(20, 30, 50, .06), 0 4px 16px rgba(20, 30, 50, .06);
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-math: "Cambria Math", "STIX Two Math", "Latin Modern Math", math, serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f131a; --surface: #171d27; --surface-2: #1c2330; --ink: #e5e9f0; --muted: #9aa4b4; --line: #2b3545;
+    --accent: #86a8ff; --accent-soft: #1e2b47; --accent-ink: #0c1222;
+    --good: #67d397; --good-bg: #13311f; --bad: #ff8f95; --bad-bg: #3b1a1d; --warn: #f3b85e; --warn-bg: #3a2b12;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f131a; --surface: #171d27; --surface-2: #1c2330; --ink: #e5e9f0; --muted: #9aa4b4; --line: #2b3545;
+  --accent: #86a8ff; --accent-soft: #1e2b47; --accent-ink: #0c1222;
+  --good: #67d397; --good-bg: #13311f; --bad: #ff8f95; --bad-bg: #3b1a1d; --warn: #f3b85e; --warn-bg: #3a2b12;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -.01em; }
+button { font: inherit; cursor: pointer; color: inherit; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+math { font-family: var(--font-math); }
+
+/* Header */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line);
+  padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; align-items: center; gap: 12px 20px; flex-wrap: wrap;
+}
+.brand { display: flex; flex-direction: column; min-width: 0; }
+.brand h1 { font-size: 1.15rem; }
+.brand span { font-size: .78rem; color: var(--muted); }
+.dots { display: flex; flex-wrap: wrap; gap: 5px; flex: 1 1 260px; min-width: 0; }
+.dot {
+  width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--line); background: var(--surface-2);
+  font-size: .7rem; font-weight: 600; display: grid; place-items: center; color: var(--muted); padding: 0;
+  font-variant-numeric: tabular-nums;
+}
+.dot.good { background: var(--good-bg); border-color: var(--good); color: var(--good); }
+.dot.retry { background: var(--warn-bg); border-color: var(--warn); color: var(--warn); }
+.dot.bad { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+.dot.current { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.dot.extra { border-style: dashed; }
+.top-actions { display: flex; gap: 8px; }
+.btn {
+  border: 1px solid var(--line); background: var(--surface); padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: .9rem;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn:hover { background: var(--surface-2); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.help { border-color: var(--accent); color: var(--accent); }
+.btn:disabled { opacity: .45; cursor: default; }
+
+/* Main two-column layout */
+.layout {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px;
+  padding-block: 18px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  max-width: 1500px; margin: 0 auto;
+}
+.work { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); min-width: 0; }
+
+/* Question card */
+.q-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.eyebrow { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+.badge { font-size: .72rem; font-weight: 600; padding: 3px 9px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
+.equation {
+  margin: 14px 0 4px; padding: 18px 12px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line);
+  font-size: 1.6rem; text-align: center; overflow-x: auto;
+}
+.step { border-top: 1px solid var(--line); padding-top: 16px; margin-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+.step h3 { font-size: 1.02rem; display: flex; gap: 10px; align-items: center; }
+.step-num {
+  width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: .8rem;
+  display: grid; place-items: center; flex: none;
+}
+.methods { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.method {
+  text-align: left; border: 1.5px solid var(--line); background: var(--surface); border-radius: 10px; padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 2px; min-width: 0;
+}
+.method b { font-size: .92rem; }
+.method small { color: var(--muted); font-size: .78rem; }
+.method:hover:not(:disabled) { border-color: var(--accent); }
+.method.sel { border-color: var(--accent); background: var(--accent-soft); }
+.method.right { border-color: var(--good); background: var(--good-bg); }
+.method.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.method.ok { border-color: var(--warn); background: var(--warn-bg); }
+.method:disabled { cursor: default; }
+.method:disabled:not(.right):not(.wrong):not(.ok) { opacity: .55; }
+
+.feedback { border-radius: 10px; padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start; font-size: .93rem; }
+.feedback .icon { font-weight: 700; font-size: 1.1rem; line-height: 1.2; flex: none; width: 22px; text-align: center; }
+.feedback.good { background: var(--good-bg); color: var(--good); }
+.feedback.bad { background: var(--bad-bg); color: var(--bad); }
+.feedback.warn { background: var(--warn-bg); color: var(--warn); }
+.feedback p { margin: 0; color: var(--ink); }
+.feedback strong { color: inherit; }
+
+.answer-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.answer-row label { font-family: var(--font-math); font-size: 1.25rem; font-style: italic; }
+.answer-row input {
+  flex: 1 1 220px; min-width: 0; font: inherit; font-size: 1.05rem; padding: 10px 12px; border-radius: 8px;
+  border: 1.5px solid var(--line); background: var(--surface); color: var(--ink);
+}
+.keypad { display: flex; gap: 6px; flex-wrap: wrap; }
+.key {
+  min-width: 42px; padding: 6px 10px; border-radius: 7px; border: 1px solid var(--line); background: var(--surface-2);
+  font-size: 1rem; font-family: var(--font-math);
+}
+.key:hover { border-color: var(--accent); }
+.preview { min-height: 38px; padding: 8px 12px; border-radius: 8px; border: 1px dashed var(--line); font-size: 1.15rem; overflow-x: auto; }
+.preview .ph { font-family: var(--font-body); font-size: .85rem; color: var(--muted); }
+.preview .err { font-family: var(--font-body); font-size: .85rem; color: var(--bad); }
+.hint-line { font-size: .82rem; color: var(--muted); }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.solution { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.solution h4 { margin: 0 0 8px; font-family: var(--font-display); font-size: .95rem; }
+.solution ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
+.solution li p { margin: 0 0 2px; font-size: .9rem; color: var(--muted); }
+.solution .m { font-size: 1.1rem; overflow-x: auto; }
+.nav { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+
+/* Summary */
+.score-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.score { border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: var(--surface-2); }
+.score b { display: block; font-family: var(--font-display); font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+.score span { font-size: .8rem; color: var(--muted); }
+.table-wrap { overflow-x: auto; margin-top: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pill { font-size: .75rem; font-weight: 600; padding: 3px 9px; border-radius: 99px; white-space: nowrap; }
+.pill.strong { background: var(--good-bg); color: var(--good); }
+.pill.weak { background: var(--bad-bg); color: var(--bad); }
+.pill.none { background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+.help-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.help-item {
+  border: 1px solid var(--line); border-left: 4px solid var(--bad); border-radius: 8px; padding: 12px 14px;
+  display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap;
+}
+.help-item div { min-width: 0; flex: 1 1 260px; }
+.help-item b { display: block; }
+.help-item p { margin: 2px 0 0; font-size: .87rem; color: var(--muted); }
+.muted { color: var(--muted); }
+
+/* Whiteboard */
+.board {
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--header-h, 64px) + 12px);
+  height: calc(100vh - var(--header-h, 64px) - 36px - env(safe-area-inset-top, 0px));
+  min-height: 420px; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; min-width: 0;
+}
+.board-bar { display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.board-title { font-family: var(--font-display); font-weight: 600; font-size: .95rem; margin-right: auto; }
+.tool {
+  height: 32px; min-width: 32px; padding: 0 8px; border-radius: 7px; border: 1px solid var(--line); background: var(--surface);
+  font-size: .8rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+}
+.tool.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.swatch { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--line); padding: 0; }
+.swatch.on { box-shadow: 0 0 0 2px var(--accent); }
+.sep { width: 1px; height: 22px; background: var(--line); margin: 0 2px; }
+.canvas-wrap {
+  position: relative; flex: 1; min-height: 0; background-color: #ffffff;
+  background-image: linear-gradient(#e9edf3 1px, transparent 1px), linear-gradient(90deg, #e9edf3 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.canvas-wrap.nogrid { background-image: none; }
+.canvas-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+
+/* Help modal */
+.modal { position: fixed; inset: 0; z-index: 20; background: rgba(10, 15, 25, .5); display: grid; place-items: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.modal-card { background: var(--surface); border-radius: 14px; width: min(720px, 100%); max-height: 100%; overflow-y: auto; box-shadow: var(--shadow); border: 1px solid var(--line); }
+.modal-head { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); }
+.modal-body { padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 22px; }
+.modal-body h3 { font-size: 1rem; margin-bottom: 8px; }
+.modal-body p { margin: 0 0 6px; }
+.guide { display: grid; gap: 8px; }
+.guide div { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 10px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: .88rem; align-items: center; }
+.guide div b { color: var(--accent); }
+.typing { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 14px; font-size: .88rem; }
+.typing code { font-family: ui-monospace, Menlo, Consolas, monospace; background: var(--surface-2); border: 1px solid var(--line); padding: 1px 6px; border-radius: 5px; white-space: nowrap; }
+.hint-steps { display: flex; flex-direction: column; gap: 10px; margin: 8px 0; }
+.hint-steps .h { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--surface-2); }
+.hint-steps .h p { margin: 0 0 4px; font-size: .88rem; color: var(--muted); }
+.hint-steps .m { font-size: 1.05rem; overflow-x: auto; }
+
+[hidden] { display: none !important; }
+.graph { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-top: 12px; }
+.graph h4 { margin: 0 0 8px; font-family: var(--font-display); font-size: .95rem; }
+.graph p { margin: 8px 0 0; font-size: .9rem; }
+.graph-svg { width: 100%; height: auto; display: block; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.g-grid { stroke: var(--line); stroke-width: 1; }
+.g-axis { stroke: var(--muted); stroke-width: 1.5; }
+.g-curve { fill: none; stroke: var(--accent); stroke-width: 3; }
+.g-dot { fill: var(--good); stroke: var(--surface); stroke-width: 2; }
+.g-tick { fill: var(--muted); font: 13px var(--font-body); }
+.g-lab { fill: var(--good); font: 600 15px var(--font-body); }
+
+.problem { margin: 14px 0 4px; padding: 14px 16px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line); font-size: 1.02rem; line-height: 1.6; }
+.method.eqc { align-items: center; justify-content: center; font-size: 1.12rem; min-height: 54px; overflow-x: auto; }
+.unit { color: var(--muted); font-size: .88rem; }
+.answer-row label { font-family: var(--font-body); font-style: normal; font-size: 1rem; font-weight: 600; }
+.answer-row input { flex: 1 1 140px; max-width: 220px; }
+.g-level { stroke: var(--warn); stroke-width: 2; stroke-dasharray: 6 5; }
+.g-title { fill: var(--muted); font: 600 14px var(--font-body); }
+
+.calc { position: fixed; z-index: 15; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  width: min(300px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 8px 32px rgba(10,15,25,.25);
+  padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.calc-head { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-display); }
+.calc-in { font: 1.05rem var(--font-math); padding: 9px 10px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--surface-2); color: var(--ink); min-width: 0; }
+.calc-out { font: 600 1.5rem var(--font-display); text-align: right; font-variant-numeric: tabular-nums; overflow-x: auto; min-height: 2rem; }
+.calc-out.err { font: .85rem var(--font-body); color: var(--bad); text-align: left; }
+.calc-keys { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.ck { padding: 9px 0; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); font-size: 1rem; font-family: var(--font-math); }
+.ck:hover { border-color: var(--accent); }
+.ck.fn { font-family: var(--font-body); font-size: .85rem; font-weight: 600; }
+.ck.eq { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+
+.method.defc { justify-content: center; font-size: .95rem; }
+.work-grid { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.work-grid .answer-row input { flex: 0 1 110px; width: 110px; }
+.score-row.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+a.btn { text-decoration: none; color: inherit; }
+.graph a { color: var(--accent); font-weight: 600; }
+.top-actions { flex-wrap: wrap; }
+
+.desmos-box { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--surface); display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.dx { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.dx code { font: 1rem ui-monospace, Menlo, Consolas, monospace; background: var(--surface-2); border: 1px solid var(--line); padding: 5px 10px; border-radius: 6px; flex: 1 1 auto; min-width: 0; overflow-x: auto; }
+.dx .btn { padding: 5px 12px; font-size: .85rem; }
+.desmos-check summary { cursor: pointer; font-weight: 600; color: var(--accent); font-size: .92rem; }
+.desmos-check[open] summary { margin-bottom: 8px; }
+
+@media (max-width: 980px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .board { position: relative; top: auto; height: 520px; }
+}
+@media (max-width: 560px) {
+  .methods { grid-template-columns: minmax(0, 1fr); }
+  .score-row, .score-row.four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .guide div { grid-template-columns: minmax(0, 1fr); }
+  .equation { font-size: 1.3rem; }
+  .panel { padding: 16px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .feedback { animation: pop .25s ease-out; }
+  @keyframes pop { from { transform: translateY(4px); opacity: .4; } to { transform: none; opacity: 1; } }
+}
+.g-rev { stroke: var(--warn); }
+.g-name { fill: var(--accent); font: 600 13px var(--font-body); }
+.g-rev-t { fill: var(--warn); }
+</style>
+</head><body>
+
+<header class="top" id="top">
+  <div class="brand">
+    <h1>3-4 Notes Applications</h1>
+    <span>Cost = Revenue: find the break-even point.</span>
+  </div>
+  <nav class="dots" id="dots" aria-label="Questions"></nav>
+  <div class="top-actions">
+    <button class="btn" id="calcBtn" type="button" aria-expanded="false">Calculator</button>
+    <a class="btn" href="https://www.desmos.com/calculator" target="_blank" rel="noopener noreferrer">Desmos ↗</a>
+    <button class="btn help" id="helpBtn" type="button">? Help</button>
+    <button class="btn" id="summaryBtn" type="button">Summary</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="work" id="work" aria-live="polite"></section>
+  <aside class="board" aria-label="Whiteboard">
+    <div class="board-bar">
+      <span class="board-title" id="boardTitle">Whiteboard</span>
+      <button class="swatch on" data-color="#18202c" style="background:#18202c" aria-label="Black pen" type="button"></button>
+      <button class="swatch" data-color="#2453c4" style="background:#2453c4" aria-label="Blue pen" type="button"></button>
+      <button class="swatch" data-color="#c62828" style="background:#c62828" aria-label="Red pen" type="button"></button>
+      <button class="swatch" data-color="#1e7d3c" style="background:#1e7d3c" aria-label="Green pen" type="button"></button>
+      <span class="sep"></span>
+      <button class="tool on" id="penThin" type="button" title="Thin pen">Thin</button>
+      <button class="tool" id="penThick" type="button" title="Thick pen">Thick</button>
+      <button class="tool" id="eraser" type="button" title="Eraser">Eraser</button>
+      <span class="sep"></span>
+      <button class="tool" id="undo" type="button" title="Undo">Undo</button>
+      <button class="tool" id="clear" type="button" title="Clear the board">Clear</button>
+      <button class="tool on" id="grid" type="button" title="Show or hide grid">Grid</button>
+    </div>
+    <div class="canvas-wrap" id="canvasWrap"><canvas id="canvas"></canvas></div>
+  </aside>
+</main>
+
+<div class="calc" id="calc" hidden role="dialog" aria-label="Calculator">
+  <div class="calc-head"><b>Calculator</b><button class="tool" id="calcClose" type="button" aria-label="Close calculator">✕</button></div>
+  <input id="calcIn" class="calc-in" type="text" autocomplete="off" spellcheck="false" inputmode="none" placeholder="e.g. 10410 / 17.35" aria-label="Expression">
+  <div id="calcOut" class="calc-out" aria-live="polite">0</div>
+  <div class="calc-keys"><button class="ck" type="button" data-c="(">(</button><button class="ck" type="button" data-c=")">)</button><button class="ck" type="button" data-c="√(">√</button><button class="ck" type="button" data-c="^2">x²</button><button class="ck" type="button" data-c="7">7</button><button class="ck" type="button" data-c="8">8</button><button class="ck" type="button" data-c="9">9</button><button class="ck" type="button" data-c="/">÷</button><button class="ck" type="button" data-c="4">4</button><button class="ck" type="button" data-c="5">5</button><button class="ck" type="button" data-c="6">6</button><button class="ck" type="button" data-c="*">×</button><button class="ck" type="button" data-c="1">1</button><button class="ck" type="button" data-c="2">2</button><button class="ck" type="button" data-c="3">3</button><button class="ck" type="button" data-c="-">−</button><button class="ck" type="button" data-c="0">0</button><button class="ck" type="button" data-c=".">.</button><button class="ck" type="button" data-c="^">^</button><button class="ck" type="button" data-c="+">+</button><button class="ck fn" type="button" data-cfn="clear">C</button><button class="ck fn" type="button" data-cfn="back" aria-label="Backspace">⌫</button><button class="ck fn" type="button" data-cfn="ans">ANS</button><button class="ck eq" type="button" data-cfn="eval">=</button></div>
+  <button class="btn primary" id="calcUse" type="button" style="width:100%;justify-content:center">Put result in answer box</button>
+</div>
+
+<div class="modal" id="helpModal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="modal-head">
+      <h2 id="helpTitle" style="font-size:1.15rem">Help</h2>
+      <button class="btn" id="helpClose" type="button">Close</button>
+    </div>
+    <div class="modal-body" id="helpBody"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ---------- Math rendering ---------- */
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function texFallback(t) {
+  let s = t;
+  for (let i = 0; i < 4; i++) s = s.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, "($1)/($2)").replace(/\\sqrt\{([^{}]*)\}/g, "√($1)");
+  return s.replace(/\\pm/g, "±").replace(/\\cdot/g, "·").replace(/\\times/g, "×").replace(/\\approx/g, "≈").replace(/\\Rightarrow/g, "⇒")
+    .replace(/\\quad|\\qquad|\\;|\\,/g, " ").replace(/\\text\{([^}]*)\}/g, "$1")
+    .replace(/\\left|\\right/g, "").replace(/\^2/g, "²").replace(/[{}]/g, "");
+}
+function M(tex, display) {
+  try {
+    if (window.katex) return katex.renderToString(tex, { output: "mathml", displayMode: !!display, throwOnError: false });
+  } catch (e) { /* fall through */ }
+  return `<span style="font-family:var(--font-math)">${esc(texFallback(tex))}</span>`;
+}
+
+/* ---------- Number helpers ---------- */
+const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a; };
+const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const nz = (a, b) => { let v; do { v = ri(a, b); } while (v === 0); return v; };
+const isSq = n => n >= 0 && Number.isInteger(Math.sqrt(n));
+function simpRad(n) { for (let k = Math.floor(Math.sqrt(n)); k > 1; k--) if (n % (k * k) === 0) return [k, n / (k * k)]; return [1, n]; }
+const fmt = n => (n < 0 ? "−" + (-n) : "" + n);
+const isInt = x => Math.abs(x - Math.round(x)) < 1e-9;
+const d2 = x => (isInt(x) ? "" + Math.round(x) : x.toFixed(2)); /* value rounded to hundredths, as TeX/plain */
+const ap = x => (isInt(x) ? "= " : "\\approx ") + d2(x);   /* "= 60" or "≈ 1.77" in TeX */
+const apT = x => (isInt(x) ? "" : "about ") + d2(x);        /* plain words */
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+/* ---------- Money & number helpers ---------- */
+const cents = n => Math.round(n * 100) / 100;
+const num = n => (isInt(n) ? Math.round(n).toLocaleString("en-US") : n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+const money = n => "$" + num(n);
+const texNum = n => num(n).replace(/,/g, "{,}");
+const plainNum = n => String(cents(n));
+const step = (lo, hi, st) => cents(lo + st * ri(0, Math.round((hi - lo) / st)));
+const T = s => `\\text{${s}}`;
+
+/* ---------- Methods & skills ---------- */
+const METHODS = [
+  { id: "sub", label: "Substitution (set Cost = Revenue)", sub: "Both equations are solved for the same thing" },
+  { id: "elim", label: "Elimination", sub: "Line up the equations, then add or subtract" },
+  { id: "graph", label: "Graphing", sub: "Find where the two lines cross (Desmos)" },
+];
+const SKILLS = {
+  def: { name: "Defining the variable", tip: "The unknown is how many items are sold. Let x = the number of items sold." },
+  cost: { name: "Writing the cost equation", tip: "Cost = initial expense + (cost per item)·x. The initial expense is paid only once, so it is NOT multiplied by x." },
+  rev: { name: "Writing the revenue equation", tip: "Revenue = (selling price)·x. Revenue is the money coming in, so it uses only the selling price." },
+  method: { name: "Choosing the method", tip: "Cost and revenue are both solved for dollars, so set Cost = Revenue (substitution). That's the break-even point." },
+  work: { name: "Solving Cost = Revenue", tip: "Subtract the cost-per-item term from both sides, then divide both sides by the number left in front of x." },
+  round: { name: "Rounding up and interpreting", tip: "You can't sell part of an item. If x isn't a whole number, always round UP so the business at least breaks even." },
+};
+
+/* ---------- Question builder: Cost = I + c·x, Revenue = p·x ---------- */
+function defChoices(v, right, wrongs) {
+  return shuffle([{ text: `${v} = ${right}`, ok: true }, ...wrongs.map(([t, why]) => ({ text: `${v} = ${t}`, why }))]);
+}
+function qBE({ I, c, p, item, items, who, need, text, src }) {
+  const k = cents(p - c), exact = I / k, whole = isInt(exact), N = Math.ceil(exact - 1e-9), lo = Math.floor(exact);
+  const costTex = `C = ${texNum(I)} + ${texNum(c)}x`, revTex = `R = ${texNum(p)}x`;
+  const costs = shuffle([
+    { tex: costTex, ok: true },
+    { tex: `C = ${texNum(I)}x + ${texNum(c)}`, why: `The ${money(I)} is paid only once, no matter how many ${items} are sold. The ${money(c)} is paid for each ${item}, so that's the number multiplied by x.` },
+    { tex: `C = ${texNum(I)} + ${texNum(p)}x`, why: `${money(p)} is the selling price. That's money coming in (revenue). Cost uses the ${money(c)} it takes to make each ${item}.` },
+    { tex: `C = ${texNum(c)}x`, why: `Don't forget the one-time ${money(I)} expense. Cost = initial expense + cost per item × number sold.` },
+  ]);
+  const revs = shuffle([
+    { tex: revTex, ok: true },
+    { tex: `R = ${texNum(p)} + x`, why: "Revenue = selling price × number sold. Multiply, don't add." },
+    { tex: `R = ${texNum(c)}x`, why: `${money(c)} is what each ${item} costs to make. Revenue uses the selling price, ${money(p)}.` },
+    { tex: `R = ${texNum(I)} + ${texNum(p)}x`, why: `The ${money(I)} is an expense, so it belongs in the cost equation, not the revenue equation.` },
+  ]);
+  const steps = [
+    { t: "Cost = initial expense + cost per item × number sold.", m: costTex },
+    { t: "Revenue = selling price × number sold.", m: revTex },
+    { t: "To find the break-even point, set cost equal to revenue.", m: `${texNum(I)} + ${texNum(c)}x = ${texNum(p)}x` },
+    { t: `Subtract ${num(c)}x from both sides.`, m: `${texNum(I)} = ${texNum(k)}x` },
+    { t: `Divide both sides by ${num(k)}.`, m: `x = \\frac{${texNum(I)}}{${texNum(k)}} ${whole ? "= " + N : "\\approx " + exact.toFixed(2)}` },
+    whole
+      ? { t: "Interpret: x is a whole number, so no rounding is needed.", m: `x = ${N}${T(" " + items)}` }
+      : { t: `Interpret: you can't sell part of a ${item}, and ${lo} ${items} isn't quite enough to break even. Always round UP.`, m: `x = ${N}${T(" " + items)}` },
+  ];
+  const check = whole
+    ? ` At ${N} ${items}, cost and revenue are both ${money(I + c * N)}.`
+    : ` Check: at ${N}, revenue (${money(p * N)}) covers the cost (${money(I + c * N)}). At ${lo}, revenue (${money(p * lo)}) is less than the cost (${money(I + c * lo)}).`;
+  return {
+    src, text, I, c, p, k, exact, N, whole, item, items,
+    defs: defChoices("x", `the number of ${items} sold`, [
+      ["the total cost, in dollars", "The total cost is C, the output of the cost equation. The question asks how many, so x is the number sold."],
+      [`the selling price of one ${item}`, `The price is given (${money(p)}). The question asks how many ${items}, so x is the number sold.`],
+      [`the cost to make one ${item}`, `That cost is given (${money(c)}). The question asks how many ${items}, so x is the number sold.`]]),
+    costs, revs,
+    costHint: `Which amount is paid only once (no x)? Which amount is paid for every ${item} (times x)?`,
+    revHint: `Revenue is the money that comes in from sales. What does each ${item} sell for?`,
+    steps, ans: `x = ${N}${T(" " + items)}`,
+    interp: `${who} ${need} ${N} ${items} to break even.${check}`,
+  };
+}
+
+/* ---------- Starting set: problems from the notes ---------- */
+function startingSet() {
+  return [
+    qBE({ I: 10410, c: 2.65, p: 20, item: "board game", items: "board games", who: "You", need: "need to sell", src: "Example 1",
+      text: "Suppose you invest $10,410 in equipment to manufacture a new board game. Each game costs $2.65 to manufacture and sells for $20. How many board games must you make and sell before your business breaks even?" }),
+    qBE({ I: 420, c: 22.5, p: 75, item: "chair", items: "chairs", who: "The carpenter", need: "will have to sell", src: "Example 2",
+      text: "A carpenter makes and sells rocking chairs. The material for each chair costs $22.50. The chairs sell for $75 each. If the carpenter spends $420 on advertising, how many chairs must she sell to break even?" }),
+    qBE({ I: 450, c: 1.5, p: 3, item: "newsletter", items: "newsletters", who: "They", need: "will have to sell", src: "Example 3",
+      text: "Printing a newsletter costs $1.50 per copy plus $450 in printer's fees. The copies are sold for $3 each. How many copies of the newsletter must be sold to break even?" }),
+    qBE({ I: 500, c: 3.25, p: 8, item: "widget", items: "widgets", who: "The company", need: "must sell", src: "Rounding note",
+      text: "A company spends $500 to set up a machine that makes widgets. Each widget costs $3.25 to make and sells for $8. How many widgets must the company sell to break even? (Remember the note: if your answer isn't a whole number, round UP.)" }),
+  ].map((q, i) => ({ ...q, id: "q" + (i + 1) }));
+}
+
+/* ---------- Random generators for extra practice ---------- */
+const CTX = [
+  { item: "cupcake", items: "cupcakes", who: "The bakery", need: "must sell", c: [0.75, 1.5, 0.05], p: [2.5, 4, 0.25], I: [150, 600],
+    make: (I, c, p) => `A bakery spends ${money(I)} on a new oven for a cupcake stand. Each cupcake costs ${money(c)} to make and sells for ${money(p)}. How many cupcakes must the bakery sell to break even?` },
+  { item: "T-shirt", items: "T-shirts", who: "The club", need: "must sell", c: [4, 8, 0.25], p: [12, 20, 1], I: [100, 400],
+    make: (I, c, p) => `A school club is selling T-shirts. The screen-printing setup fee is ${money(I)}, and each shirt costs ${money(c)} to print. The club sells the shirts for ${money(p)} each. How many T-shirts must the club sell to break even?` },
+  { item: "phone case", items: "phone cases", who: "You", need: "need to sell", c: [3, 6, 0.25], p: [15, 25, 1], I: [1500, 6000],
+    make: (I, c, p) => `You buy a 3D printer for ${money(I)} to start a phone case business. The material for each case costs ${money(c)}, and you sell each case for ${money(p)}. How many phone cases must you sell to break even?` },
+  { item: "candle", items: "candles", who: "The craft shop", need: "must sell", c: [2, 5, 0.25], p: [10, 18, 0.5], I: [200, 900],
+    make: (I, c, p) => `A craft shop spends ${money(I)} on molds and a booth at a fair. Each candle costs ${money(c)} in wax and wicks and sells for ${money(p)}. How many candles must the shop sell to break even?` },
+  { item: "cup of lemonade", items: "cups of lemonade", who: "The stand", need: "must sell", c: [0.2, 0.6, 0.05], p: [1, 2, 0.25], I: [30, 120],
+    make: (I, c, p) => `A lemonade stand costs ${money(I)} to build. Each cup of lemonade costs ${money(c)} to make and sells for ${money(p)}. How many cups of lemonade must the stand sell to break even?` },
+  { item: "birdhouse", items: "birdhouses", who: "The woodworker", need: "will have to sell", c: [6, 12, 0.5], p: [25, 40, 1], I: [250, 800],
+    make: (I, c, p) => `A woodworker spends ${money(I)} on new tools to build birdhouses. The wood for each birdhouse costs ${money(c)}, and each one sells for ${money(p)}. How many birdhouses must the woodworker sell to break even?` },
+  { item: "video game", items: "copies", who: "The studio", need: "must sell", c: [1, 3, 0.25], p: [10, 20, 1], I: [5000, 20000],
+    make: (I, c, p) => `A small studio spends ${money(I)} to develop a video game. Each copy costs ${money(c)} to distribute and sells for ${money(p)}. How many copies must the studio sell to break even?` },
+  { item: "bracelet", items: "bracelets", who: "The student", need: "must sell", c: [0.8, 2, 0.05], p: [5, 8, 0.5], I: [40, 150],
+    make: (I, c, p) => `A student spends ${money(I)} on beads and tools to make bracelets. Each bracelet costs ${money(c)} in materials and sells for ${money(p)}. How many bracelets must the student sell to break even?` },
+];
+function genBE(forceFrac) {
+  for (;;) {
+    const ctx = pick(CTX), c = step(...ctx.c), p = step(...ctx.p), k = cents(p - c);
+    if (k <= 0) continue;
+    const frac = forceFrac || Math.random() < 0.5;
+    let I;
+    if (frac) { I = ri(ctx.I[0], ctx.I[1]); if (isInt(I / k)) continue; }
+    else { const nLo = Math.ceil(ctx.I[0] / k), nHi = Math.floor(ctx.I[1] / k); if (nHi < nLo) continue; I = cents(ri(nLo, nHi) * k); }
+    if (I / k < 3) continue;
+    return qBE({ I, c, p, item: ctx.item, items: ctx.items, who: ctx.who, need: ctx.need, text: ctx.make(I, c, p) });
+  }
+}
+
+/* ---------- Answer parser (one value per box) ---------- */
+/* ---------- Answer parser (one value per box) ---------- */
+function tokenize(str) {
+  const toks = []; let i = 0;
+  while (i < str.length) {
+    const ch = str[i];
+    if (/\s/.test(ch)) { i++; continue; }
+    if (/[0-9.]/.test(ch)) {
+      let j = i; while (j < str.length && /[0-9.]/.test(str[j])) j++;
+      const raw = str.slice(i, j);
+      if (!/^(\d+\.?\d*|\.\d+)$/.test(raw)) throw new Error(`"${raw}" isn't a number I can read.`);
+      toks.push({ k: "n", v: parseFloat(raw), raw }); i = j; continue;
+    }
+    if ("+-*/^()±√".includes(ch)) { toks.push({ k: ch }); i++; continue; }
+    throw new Error(`I can't read "${ch}". Type a number, like 1.77.`);
+  }
+  return toks;
+}
+function parseExpr(toks) {
+  let p = 0;
+  const peek = () => toks[p];
+  const eat = k => { if (toks[p] && toks[p].k === k) { p++; return true; } return false; };
+  function expr() { let a = term(); while (peek() && "+-±".includes(peek().k)) { const op = toks[p++].k; a = { t: "bin", op, a, b: term() }; } return a; }
+  function term() {
+    let a = unary();
+    for (;;) {
+      const t = peek(); if (!t) break;
+      if (t.k === "*" || t.k === "/") { p++; a = { t: "bin", op: t.k, a, b: unary() }; continue; }
+      if (t.k === "n" || t.k === "(" || t.k === "√") { a = { t: "bin", op: "*", a, b: power() }; continue; }
+      break;
+    }
+    return a;
+  }
+  function unary() {
+    const t = peek();
+    if (t && (t.k === "-" || t.k === "+" || t.k === "±")) { p++; const a = unary(); return t.k === "+" ? a : { t: t.k === "-" ? "neg" : "pm", a }; }
+    return power();
+  }
+  function power() { let a = primary(); if (eat("^")) a = { t: "bin", op: "^", a, b: unary() }; return a; }
+  function primary() {
+    const t = peek();
+    if (!t) throw new Error("Your answer seems to stop early. Is something missing at the end?");
+    if (t.k === "n") { p++; return { t: "num", v: t.v }; }
+    if (t.k === "(") { p++; const a = expr(); if (!eat(")")) throw new Error("A closing parenthesis ) is missing."); return { t: "par", a }; }
+    if (t.k === "√") { p++; return { t: "sqrt", a: primary() }; }
+    throw new Error(`Something is out of place near "${t.k}".`);
+  }
+  const ast = expr();
+  if (p < toks.length) throw new Error(toks[p].k === ")" ? "There's an extra closing parenthesis )." : `Something is out of place near "${toks[p].k}".`);
+  return ast;
+}
+function ev(n) {
+  switch (n.t) {
+    case "num": return [n.v];
+    case "par": return ev(n.a);
+    case "neg": return ev(n.a).map(x => -x);
+    case "pm": return ev(n.a).flatMap(x => [x, -x]);
+    case "sqrt": return ev(n.a).map(x => Math.sqrt(x));
+    case "bin": {
+      const A = ev(n.a), B = ev(n.b), out = [];
+      for (const x of A) for (const y of B) {
+        if (n.op === "+") out.push(x + y); else if (n.op === "-") out.push(x - y); else if (n.op === "±") out.push(x + y, x - y);
+        else if (n.op === "*") out.push(x * y); else if (n.op === "/") out.push(x / y); else out.push(Math.pow(x, y));
+      }
+      return out;
+    }
+  }
+  return [NaN];
+}
+function parseValue(raw) {
+  const s = String(raw).replace(/[−–—]/g, "-").replace(/[×·]/g, "*").replace(/÷/g, "/")
+    .replace(/square\s*root|sqrt|root/gi, "√").replace(/\+\s*\/\s*-|\+\s*-/g, "±")
+    .replace(/^\s*[a-z][a-z0-9 ]*=/i, "")                  /* "t = 1.77" */
+    .replace(/(\d),(\d{3})(?!\d)/g, "$1$2")                 /* 6,600 */
+    .replace(/[a-z]+[²³]?\.?/gi, "").trim();               /* units like sec, ft, m² */
+  if (!s) throw new Error("Type a number in each box.");
+  const vals = ev(parseExpr(tokenize(s)));
+  const u = vals.filter((v, i) => vals.findIndex(w => Math.abs(w - v) < 1e-9) === i);
+  if (u.length !== 1) throw new Error("Put just one value in each box (no ±). Decide which solution makes sense.");
+  if (!isFinite(u[0])) throw new Error("That isn't a real number. Check for a negative under a square root or a division by zero.");
+  return u[0];
+}
+
+const pv = raw => parseValue(String(raw).replace(/\$/g, ""));
+const near = (v, e, tol) => Math.abs(v - e) <= tol + 1e-9;
+
+/* ---------- Final answer check (whole number of items, rounded up) ---------- */
+function checkAnswer(q, raw) {
+  const v = pv(raw);
+  if (near(v, q.N, 1e-6)) return { status: "correct" };
+  if (!q.whole && near(v, q.exact, 0.011)) return { status: "almost", round: true, msg: `${d2(q.exact)} is the exact break-even point, but you can't sell part of a ${q.item}. Your answer needs to be a whole number. Round UP.` };
+  if (!q.whole && near(v, Math.floor(q.exact), 1e-6)) return { status: "wrong", round: true, msg: `Would ${Math.floor(q.exact)} be enough? Revenue would be ${money(q.p * Math.floor(q.exact))}, but cost would be ${money(q.I + q.c * Math.floor(q.exact))}. That's still a loss. Always round UP.` };
+  if (!isInt(v)) return { status: "wrong", round: true, msg: `The answer is a number of ${q.items}, so it has to be a whole number. Check your division, then round UP if needed.` };
+  if (near(v, Math.ceil(q.I / (q.p + q.c) - 1e-9), 0.6)) return { status: "wrong", msg: `It looks like you added ${num(q.c)} and ${num(q.p)}. Subtract ${num(q.c)}x from both sides: ${num(q.p)}x − ${num(q.c)}x = ${num(q.k)}x.` };
+  if (near(v, Math.ceil(q.I / q.p - 1e-9), 0.6)) return { status: "wrong", msg: `It looks like the cost per ${q.item} was left out. Cost = ${money(q.I)} + ${num(q.c)}x.` };
+  if (near(v, Math.ceil(q.I / q.c - 1e-9), 0.6)) return { status: "wrong", msg: `It looks like you divided by the cost per ${q.item}. Divide by ${num(q.p)} − ${num(q.c)} = ${num(q.k)}.` };
+  return { status: "wrong", msg: "Not quite. Check your equation and your work on the whiteboard, or open Help for a hint." };
+}
+
+/* ---------- Graph: cost and revenue lines, break-even point labeled ---------- */
+function niceStep(span) { const raw = span / 7, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p; }
+const tickLab = v => { const r = +v.toFixed(4); return Math.abs(r) >= 1000 ? r.toLocaleString("en-US") : fmt(r); };
+function graphSVG(q) {
+  const hi = Math.max(4, q.exact * 1.6), C = x => q.I + q.c * x, Rv = x => q.p * x;
+  const W = 560, H = 300, mL = 70, mR = 18, mT = 18, mB = 46, pw = W - mL - mR, ph = H - mT - mB, ymax = Math.max(C(hi), Rv(hi)) * 1.08;
+  const sx = x => mL + x / hi * pw, sy = y => mT + ph - y / ymax * ph;
+  let s = `<svg class="graph-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Graph of the cost and revenue lines with the break-even point labeled">`;
+  const xs = niceStep(hi), ys = niceStep(ymax);
+  for (let t = 0; t <= hi + 1e-9; t += xs) s += `<line class="g-grid" x1="${sx(t)}" y1="${mT}" x2="${sx(t)}" y2="${mT + ph}"/><text class="g-tick" x="${sx(t)}" y="${mT + ph + 16}" text-anchor="middle">${tickLab(t)}</text>`;
+  for (let t = 0; t <= ymax + 1e-9; t += ys) s += `<line class="g-grid" x1="${mL}" y1="${sy(t)}" x2="${mL + pw}" y2="${sy(t)}"/><text class="g-tick" x="${mL - 6}" y="${sy(t) + 4}" text-anchor="end">${tickLab(t)}</text>`;
+  s += `<line class="g-axis" x1="${mL}" y1="${sy(0)}" x2="${mL + pw}" y2="${sy(0)}"/><line class="g-axis" x1="${mL}" y1="${mT}" x2="${mL}" y2="${mT + ph}"/>`;
+  s += `<line class="g-curve" x1="${sx(0)}" y1="${sy(C(0))}" x2="${sx(hi)}" y2="${sy(C(hi))}"/><line class="g-curve g-rev" x1="${sx(0)}" y1="${sy(0)}" x2="${sx(hi)}" y2="${sy(Rv(hi))}"/>`;
+  const cUp = C(hi) > Rv(hi);
+  s += `<text class="g-name" x="${sx(hi) - 4}" y="${sy(C(hi)) + (cUp ? -8 : 18)}" text-anchor="end">Cost</text><text class="g-name g-rev-t" x="${sx(hi) - 4}" y="${sy(Rv(hi)) + (cUp ? 18 : -8)}" text-anchor="end">Revenue</text>`;
+  const X = sx(q.exact), Y = sy(Rv(q.exact));
+  s += `<circle class="g-dot" cx="${X}" cy="${Y}" r="6"/><text class="g-lab" x="${X - 10}" y="${Y - 12}" text-anchor="end">(${tickLab(+d2(q.exact))}, ${money(cents(Rv(q.exact)))})</text>`;
+  s += `<text class="g-title" x="${mL + pw / 2}" y="${H - 6}" text-anchor="middle">x (${esc(q.items)} sold)</text>`;
+  s += `<text class="g-title" transform="translate(14 ${mT + ph / 2}) rotate(-90)" text-anchor="middle">dollars</text></svg>`;
+  return `<div class="graph"><h4>Check with a graph</h4>${s}
+    <p class="muted">Left of the break-even point, the cost line is higher (a loss). To the right, the revenue line is higher (a profit). Graph it yourself in Desmos, then click where the lines cross:</p>${desmosPanel(q)}</div>`;
+}
+
+/* ---------- State ---------- */
+const STORE = "breakEvenReview.v1";
+let state = load() || fresh();
+function fresh() { const qs = startingSet(); return { questions: qs, res: {}, cur: 0, view: "q", nextId: qs.length + 1, drafts: {}, wdrafts: {} }; }
+function load() { try { const s = JSON.parse(localStorage.getItem(STORE)); return s && Array.isArray(s.questions) && s.questions.length ? s : null; } catch (e) { return null; } }
+function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* storage unavailable */ } }
+const R = id => (state.res[id] = state.res[id] || { defPick: null, defStatus: null, costPick: null, costStatus: null, revPick: null, revStatus: null, method: null, methodStatus: null, methodOk: null, workStatus: null, workTries: 0, workFirstOk: null, workLast: null, attempts: 0, firstOk: null, solved: false, revealed: false, hints: 0, roundIssue: false, last: null });
+
+/* ---------- Rendering ---------- */
+const $ = s => document.querySelector(s);
+const work = $("#work");
+function dotClass(q) {
+  const r = state.res[q.id]; if (!r) return "";
+  if (r.solved && r.firstOk && r.defStatus === "right" && r.costStatus === "right" && r.revStatus === "right" && r.workFirstOk) return "good";
+  if (r.solved) return "retry";
+  if (r.revealed || r.attempts || r.defStatus === "wrong" || r.costStatus === "wrong" || r.revStatus === "wrong" || r.workTries) return "bad";
+  return "";
+}
+function renderDots() {
+  $("#dots").innerHTML = state.questions.map((q, i) =>
+    `<button class="dot ${dotClass(q)} ${q.extra ? "extra" : ""} ${state.view === "q" && i === state.cur ? "current" : ""}" data-i="${i}" type="button" aria-label="Question ${i + 1}">${i + 1}</button>`).join("");
+}
+function render() {
+  renderDots();
+  if (state.view === "summary") { renderSummary(); Board.setKey("summary", "Whiteboard · Summary"); }
+  else { renderQuestion(); const q = state.questions[state.cur]; Board.setKey(q.id, `Whiteboard · Question ${state.cur + 1}`); }
+  save();
+}
+const methodLabel = id => METHODS.find(m => m.id === id).label;
+const methodStatusFor = m => (m === "sub" ? "right" : "ok");
+function stepHead(n, txt) { return `<h3><span class="step-num">${n}</span>${txt}</h3>`; }
+const DESMOS = "https://www.desmos.com/calculator";
+const desmosLink = (txt = "Open Desmos ↗") => `<a class="btn" href="${DESMOS}" target="_blank" rel="noopener noreferrer">${txt}</a>`;
+const usesGraph = q => !!(state.res[q.id] && state.res[q.id].method === "graph");
+const desmosExprs = q => [`y=${plainNum(q.I)}+${plainNum(q.c)}x`, `y=${plainNum(q.p)}x`];
+function desmosPanel(q) {
+  return `<div class="desmos-box">${desmosExprs(q).map((e, i) => `<div class="dx"><span class="unit" style="min-width:64px">${i ? "Revenue" : "Cost"}</span><code>${esc(e)}</code><button class="btn" type="button" data-copy="${esc(e)}">Copy</button></div>`).join("")}
+    <div class="actions" style="align-items:center">${desmosLink()}<span class="hint-line">Paste each line into its own Desmos box. The numbers are big, so zoom out until you can see where the lines cross.</span></div></div>`;
+}
+function copyText(txt, btn) {
+  const done = ok => { btn.textContent = ok ? "Copied!" : "Select and copy"; setTimeout(() => { btn.textContent = "Copy"; }, 1600); };
+  const fallback = () => {
+    try { const ta = document.createElement("textarea"); ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand("copy"); ta.remove(); done(ok); } catch (e) { done(false); }
+  };
+  try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(() => done(true), fallback); else fallback(); } catch (e) { fallback(); }
+}
+function workFields(q) {
+  if (usesGraph(q)) return [{ label: "x", unit: `(${q.items})` }, { label: "y", unit: "(dollars)" }];
+  return [{ label: num(q.I), unit: "x" }];
+}
+function workShow(q) {
+  if (usesGraph(q)) return `(${d2(q.exact)},\\ ${d2(q.p * q.exact)})`;
+  return `${texNum(q.I)} + ${texNum(q.c)}x = ${texNum(q.p)}x \\;\\Rightarrow\\; ${texNum(q.I)} = ${texNum(q.k)}x`;
+}
+function checkWork(q, raws) {
+  const labels = workFields(q).map(f => f.label);
+  const vals = raws.map((x, i) => { try { return pv(x); } catch (e) { throw new Error(`${labels[i]}: ${e.message}`); } });
+  if (usesGraph(q)) {
+    const [x, y] = vals, Y = q.p * q.exact;
+    if (near(x, q.exact, 0.011) && near(y, Y, 0.011)) return { ok: true };
+    if (near(x, q.exact, 0.06) && near(y, Y, 0.06 * Math.max(1, q.p))) return { ok: false, close: true, msg: "Close! Click the point where the lines cross and round each value to the nearest hundredth." };
+    if (near(x, q.exact, 0.011)) return { ok: false, close: true, msg: "Your x-value is right. The y-value is the second number in the point (the dollars)." };
+    if (near(x, Y, 0.011) && near(y, q.exact, 0.011)) return { ok: false, msg: "Your values are switched. The point is (x, y): number sold first, then dollars." };
+    return { ok: false, msg: "Check your graph. Type both equations exactly as shown, zoom out, then click the point where the two lines cross." };
+  }
+  const v = vals[0];
+  if (near(v, q.k, 1e-6)) return { ok: true };
+  if (near(v, -q.k, 1e-6)) return { ok: false, msg: `Watch the sign. Subtract ${num(q.c)}x from both sides so the x term stays positive: ${num(q.p)}x − ${num(q.c)}x.` };
+  if (near(v, q.p + q.c, 1e-6)) return { ok: false, msg: `To move ${num(q.c)}x to the other side, subtract it: ${num(q.p)}x − ${num(q.c)}x.` };
+  if (near(v, q.p, 1e-6) || near(v, q.c, 1e-6)) return { ok: false, msg: `Combine the x terms. Subtract ${num(q.c)}x from both sides, so the right side becomes (${num(q.p)} − ${num(q.c)})x.` };
+  if (near(v, q.exact, 0.011) || near(v, q.N, 1e-6)) return { ok: false, close: true, msg: `That's the value of x! For this box, enter the number in front of x after you subtract ${num(q.c)}x from both sides.` };
+  return { ok: false, msg: `Not quite. Write Cost = Revenue: ${num(q.I)} + ${num(q.c)}x = ${num(q.p)}x. Then subtract ${num(q.c)}x from both sides.` };
+}
+function choiceButtons(list, pick, done, attr, renderItem, cls = "") {
+  return list.map((c, i) => {
+    let k = "";
+    if (done) { if (c.ok) k = "right"; else if (i === pick) k = "wrong"; }
+    else if (pick === i) k = "sel";
+    return `<button class="method ${cls} ${k}" ${attr}="${i}" type="button" role="radio" aria-checked="${pick === i}" ${done ? "disabled" : ""}>${renderItem(c)}</button>`;
+  }).join("");
+}
+function renderQuestion() {
+  const q = state.questions[state.cur], r = R(q.id), n = state.questions.length;
+  const help = `<button class="btn help" data-help type="button">? Help</button>`;
+  let h = `<div class="panel">
+    <div class="q-head"><span class="eyebrow">Question ${state.cur + 1} of ${n}</span><span style="display:flex;gap:6px;flex-wrap:wrap"><span class="badge">Break-even point</span>${q.src ? `<span class="badge">${esc(q.src)}</span>` : ""}${q.extra ? `<span class="badge">Extra practice</span>` : ""}</span></div>
+    <p class="problem">${esc(q.text)}</p>`;
+  const end = () => {
+    h += `</div>`;
+    const last = state.cur === n - 1;
+    h += `<div class="nav"><button class="btn" id="prev" type="button" ${state.cur === 0 ? "disabled" : ""}>← Previous</button>
+      ${last ? `<button class="btn primary" id="toSummary" type="button">See my summary →</button>` : `<button class="btn primary" id="next" type="button">Next question →</button>`}</div>`;
+    work.innerHTML = h;
+  };
+  /* Step 1: define the variable */
+  h += `<div class="step">${stepHead(1, "Define the variable. What should x stand for?")}<div class="methods defs" role="radiogroup" aria-label="Variable">
+    ${choiceButtons(q.defs, r.defPick, r.defStatus !== null, "data-def", c => esc(c.text), "defc")}</div>`;
+  if (r.defStatus === null) { h += `<div class="actions"><button class="btn primary" id="checkDef" type="button" ${r.defPick === null ? "disabled" : ""}>Check variable</button>${help}</div></div>`; return end(); }
+  h += r.defStatus === "right"
+    ? feedback("good", "✓", `<strong>Yes.</strong> Let ${esc(q.defs.find(c => c.ok).text)}. Always write this down before you start.`)
+    : feedback("bad", "✗", `<strong>Not quite.</strong> ${esc(q.defs[r.defPick].why)} The correct definition is highlighted in green.`);
+  h += `</div>`;
+  /* Step 2: cost equation */
+  h += `<div class="step">${stepHead(2, "Write the COST equation.")}<p class="hint-line" style="margin:0">Cost = initial expense + cost per item × number sold</p><div class="methods" role="radiogroup" aria-label="Cost equation">
+    ${choiceButtons(q.costs, r.costPick, r.costStatus !== null, "data-cost", c => M(c.tex), "eqc")}</div>`;
+  if (r.costStatus === null) { h += `<div class="actions"><button class="btn primary" id="checkCost" type="button" ${r.costPick === null ? "disabled" : ""}>Check cost equation</button>${help}</div></div>`; return end(); }
+  h += r.costStatus === "right"
+    ? feedback("good", "✓", `<strong>Yes.</strong> The ${esc(money(q.I))} is paid once, and ${esc(money(q.c))} is paid for each ${esc(q.item)}.`)
+    : feedback("bad", "✗", `<strong>Not quite.</strong> ${esc(q.costs[r.costPick].why)} The correct equation is highlighted in green.`);
+  h += `</div>`;
+  /* Step 3: revenue equation */
+  h += `<div class="step">${stepHead(3, "Write the REVENUE equation.")}<p class="hint-line" style="margin:0">Revenue = selling price × number sold</p><div class="methods" role="radiogroup" aria-label="Revenue equation">
+    ${choiceButtons(q.revs, r.revPick, r.revStatus !== null, "data-rev", c => M(c.tex), "eqc")}</div>`;
+  if (r.revStatus === null) { h += `<div class="actions"><button class="btn primary" id="checkRev" type="button" ${r.revPick === null ? "disabled" : ""}>Check revenue equation</button>${help}</div></div>`; return end(); }
+  h += r.revStatus === "right"
+    ? feedback("good", "✓", `<strong>Yes.</strong> Each ${esc(q.item)} brings in ${esc(money(q.p))}, so the revenue is ${esc(num(q.p))}x.`)
+    : feedback("bad", "✗", `<strong>Not quite.</strong> ${esc(q.revs[r.revPick].why)} The correct equation is highlighted in green.`);
+  h += `<div class="equation">${M(`C = ${texNum(q.I)} + ${texNum(q.c)}x`)}<br>${M(`R = ${texNum(q.p)}x`)}</div>`;
+  h += `</div>`;
+  /* Step 4: method */
+  h += `<div class="step">${stepHead(4, "What is the best method to solve this system?")}<div class="methods" role="radiogroup" aria-label="Method">`;
+  const methodDone = r.methodStatus !== null;
+  for (const m of METHODS) {
+    let cls = "";
+    if (methodDone) { if (m.id === "sub") cls = "right"; else if (m.id === r.method) cls = "ok"; }
+    else if (r.method === m.id) cls = "sel";
+    h += `<button class="method ${cls}" data-method="${m.id}" type="button" role="radio" aria-checked="${r.method === m.id}" ${methodDone ? "disabled" : ""}><b>${m.label}</b><small>${m.sub}</small></button>`;
+  }
+  h += `</div>`;
+  if (!methodDone) { h += `<div class="actions"><button class="btn primary" id="checkMethod" type="button" ${r.method ? "" : "disabled"}>Check method</button>${help}</div></div>`; return end(); }
+  const why = "Cost and revenue are both written as “dollars =”, so you can set them equal to each other: Cost = Revenue. The point where they're equal is the break-even point.";
+  h += r.methodStatus === "right"
+    ? feedback("good", "✓", `<strong>Yes, that's the best method.</strong> ${esc(why)}`)
+    : feedback("warn", "✓", `<strong>That works too.</strong> The best method is <strong>${methodLabel("sub")}</strong>. ${esc(why)}${r.method === "graph" ? " In step 5 you'll graph both lines in Desmos and find where they cross." : ""}`);
+  h += `</div>`;
+  /* Step 5: work it out */
+  const wf = workFields(q), wd = (state.wdrafts && state.wdrafts[q.id]) || [], workDone = r.workStatus === "right" || r.workStatus === "shown";
+  const gp = usesGraph(q);
+  const prompt = gp
+    ? "Type both equations below into Desmos. Desmos uses y for dollars. Click the point where the two lines cross and enter its coordinates, rounded to the nearest hundredth."
+    : `Set Cost = Revenue: ${num(q.I)} + ${num(q.c)}x = ${num(q.p)}x. Get the x terms together on one side. Fill in the blank.`;
+  h += `<div class="step">${stepHead(5, gp ? "Graph it" : "Work it out")}<p class="hint-line" style="margin:0;font-size:.92rem;color:var(--ink)">${esc(prompt)}</p>${gp && !workDone ? desmosPanel(q) : ""}
+    <div class="work-grid">${wf.map((f, i) => `<div class="answer-row"><label for="wk${i}">${esc(f.label)} =</label><input id="wk${i}" class="wk" data-wk="${i}" type="text" autocomplete="off" spellcheck="false" inputmode="decimal" value="${esc(wd[i] || "")}" ${workDone ? "disabled" : ""}><span class="unit"${gp ? "" : ' style="font:italic 1.2rem var(--font-math);color:var(--ink)"'}>${esc(f.unit)}</span></div>`).join("")}</div>`;
+  if (!workDone) h += `<div class="actions"><button class="btn primary" id="checkWork" type="button">Check work</button>${r.workTries ? `<button class="btn" id="showWork" type="button">Show me</button>` : ""}${help}</div>`;
+  if (r.workLast) {
+    const L = r.workLast;
+    if (L.status === "error") h += feedback("warn", "!", esc(L.msg));
+    else if (L.status === "wrong") h += feedback(L.close ? "warn" : "bad", L.close ? "!" : "✗", `<strong>${L.close ? "Almost." : "Not quite."}</strong> ${esc(L.msg)}`);
+  }
+  const nextTxt = gp ? "The x-value is the break-even point. Now decide how many you actually need to sell." : `Now divide both sides by ${num(q.k)}.`;
+  if (r.workStatus === "right") h += feedback("good", "✓", `<strong>Correct!</strong> ${esc(nextTxt)}`);
+  if (r.workStatus === "shown") h += feedback("warn", "!", `Here it is: ${M(workShow(q))}. ${esc(nextTxt)}`);
+  h += `</div>`;
+  if (!workDone) return end();
+  /* Step 6: solve and interpret */
+  const finished = r.solved || r.revealed, drafts = (state.drafts && state.drafts[q.id]) || [];
+  h += `<div class="step">${stepHead(6, `Solve and interpret. How many ${esc(q.items)} must be sold?`)}
+    <p class="hint-line" style="margin:0">Your answer must be a whole number. If x isn't a whole number, always round UP.</p>
+    <div class="answer-row"><label for="ans0">x =</label>
+      <input id="ans0" class="ans" data-field="0" type="text" autocomplete="off" spellcheck="false" inputmode="decimal" placeholder="e.g. 600" value="${esc(drafts[0] || "")}" ${finished ? "disabled" : ""}>
+      <span class="unit">${esc(q.items)}</span></div>
+    ${finished ? "" : `<div class="actions"><button class="btn primary" id="checkAns" type="button">Check answer</button>
+      ${r.attempts ? `<button class="btn" id="reveal" type="button">Show solution</button>` : ""}
+      ${help}</div>
+    ${gp ? "" : `<details class="desmos-check"><summary>Check your answer in Desmos</summary>${desmosPanel(q)}</details>`}`}
+    ${answerFeedback(r)}
+  </div>`;
+  if (finished) {
+    h += `<div class="solution"><h4>Worked solution</h4>${gp ? `<p class="muted" style="margin:0 0 8px">You solved by graphing. Here is the algebra for comparison. Both give the same answer.</p>` : ""}<ol>${q.steps.map(s => `<li><p>${esc(s.t)}</p><div class="m">${M(s.m)}</div></li>`).join("")}</ol>
+      <p style="margin:12px 0 0"><b>Answer:</b> ${M(q.ans)}</p>
+      <p style="margin:8px 0 0"><b>Interpretation:</b> ${esc(q.interp)}</p></div>${graphSVG(q)}`;
+  }
+  end();
+}
+function feedback(kind, icon, html) { return `<div class="feedback ${kind}" role="status"><span class="icon">${icon}</span><p>${html}</p></div>`; }
+function answerFeedback(r) {
+  if (!r.last) return "";
+  const L = r.last;
+  if (L.status === "correct") return feedback("good", "✓", `<strong>Correct!</strong> ${r.attempts === 1 ? "Nice work, first try." : `You got it in ${r.attempts} tries.`}`);
+  if (L.status === "revealed") return feedback("bad", "✗", "Here is the worked solution. Study each step, then try the next one on your own.");
+  if (L.status === "almost") return feedback("warn", "!", `<strong>Almost.</strong> ${esc(L.msg)}`);
+  if (L.status === "error") return feedback("warn", "!", esc(L.msg));
+  return feedback("bad", "✗", `<strong>Not correct.</strong> ${esc(L.msg)}`);
+}
+
+/* ---------- Summary ---------- */
+function analyze() {
+  const all = state.questions.map(q => state.res[q.id]).filter(Boolean);
+  const tally = (key, checked, right) => ({ key, checked: checked.length, right: right.length, status: !checked.length ? "none" : right.length < checked.length ? "weak" : "strong" });
+  const answered = all.filter(r => r.attempts || r.revealed);
+  return [
+    tally("def", all.filter(r => r.defStatus), all.filter(r => r.defStatus === "right")),
+    tally("cost", all.filter(r => r.costStatus), all.filter(r => r.costStatus === "right")),
+    tally("rev", all.filter(r => r.revStatus), all.filter(r => r.revStatus === "right")),
+    tally("method", all.filter(r => r.methodStatus), all.filter(r => r.methodStatus === "right")),
+    tally("work", all.filter(r => r.workStatus), all.filter(r => r.workFirstOk)),
+    tally("round", answered, answered.filter(r => r.firstOk && !r.revealed && !r.roundIssue)),
+  ];
+}
+function renderSummary() {
+  const rows = analyze(), all = state.questions.map(q => state.res[q.id]).filter(Boolean);
+  const answered = all.filter(r => r.attempts || r.revealed), defChecked = all.filter(r => r.defStatus), methodChecked = all.filter(r => r.methodStatus);
+  const eqChecked = all.filter(r => r.costStatus && r.revStatus);
+  const unanswered = state.questions.length - answered.length, weak = rows.filter(r => r.status === "weak");
+  let h = `<div class="panel"><span class="eyebrow">Your results</span><h2 style="font-size:1.5rem;margin-top:4px">Summary</h2>
+    <div class="score-row four">
+      <div class="score"><b>${defChecked.filter(r => r.defStatus === "right").length}/${defChecked.length}</b><span>variables defined correctly</span></div>
+      <div class="score"><b>${eqChecked.filter(r => r.costStatus === "right" && r.revStatus === "right").length}/${eqChecked.length}</b><span>cost and revenue equations both right</span></div>
+      <div class="score"><b>${methodChecked.filter(r => r.methodStatus === "right").length}/${methodChecked.length}</b><span>best method chosen</span></div>
+      <div class="score"><b>${answered.filter(r => r.firstOk && !r.revealed).length}/${answered.length}</b><span>answers right on the first try</span></div>
+    </div>
+    ${unanswered ? `<p class="muted" style="margin:12px 0 0">${unanswered} question${unanswered === 1 ? " is" : "s are"} not finished yet. Click a number at the top to go back.</p>` : ""}
+  </div>`;
+  h += `<div class="panel"><h3 style="font-size:1.1rem">What you need more help on</h3>`;
+  if (!all.some(r => r.defStatus)) h += `<p class="muted">Answer some questions first, then come back here to see what to practice.</p>`;
+  else if (!weak.length) h += `<p>Great job! Every step you checked was right the first time. Add more problems below if you want extra practice.</p>`;
+  else {
+    h += `<div class="help-list">${weak.map(r => `<div class="help-item"><div><b>${SKILLS[r.key].name}</b><p>${r.right} of ${r.checked} right the first time. ${esc(SKILLS[r.key].tip)}</p></div>
+        <button class="btn primary" data-more="${r.key}" type="button">+ Add 3 more</button></div>`).join("")}</div>
+    <div class="actions" style="margin-top:14px"><button class="btn primary" id="moreAll" type="button">+ Add ${Math.min(6, weak.length * 2)} more problems</button></div>`;
+  }
+  h += `</div>`;
+  h += `<div class="panel"><h3 style="font-size:1.1rem">Results by step</h3><div class="table-wrap"><table>
+    <thead><tr><th>Step</th><th>Right first time</th><th>Status</th><th></th></tr></thead><tbody>
+    ${rows.map(r => `<tr><td>${SKILLS[r.key].name}</td>
+      <td class="num">${r.right}/${r.checked}</td>
+      <td><span class="pill ${r.status}">${r.status === "weak" ? "Needs practice" : r.status === "strong" ? "Got it" : "Not started"}</span></td>
+      <td><button class="btn" data-more="${r.key}" type="button" style="padding:5px 10px;font-size:.8rem">+ 3 more</button></td></tr>`).join("")}
+    </tbody></table></div></div>`;
+  h += `<div class="nav"><button class="btn" id="backQ" type="button">← Back to questions</button>
+    <button class="btn" id="restart" type="button">Start over</button></div>`;
+  work.innerHTML = h;
+}
+function addMore(count, forceFrac) {
+  const seen = new Set(state.questions.map(q => q.text)), fresh = [];
+  for (let i = 0; i < count; i++) {
+    /* when rounding is the weak spot, every new problem needs rounding; otherwise mix, with at least one that does */
+    let q, tries = 0; do { q = genBE(forceFrac || i === 0); tries++; } while (seen.has(q.text) && tries < 30);
+    seen.add(q.text); fresh.push(q);
+  }
+  shuffle(fresh);
+  const start = state.questions.length;
+  fresh.forEach(q => { q.id = "q" + state.nextId++; q.extra = true; state.questions.push(q); });
+  state.cur = start; state.view = "q"; render(); window.scrollTo({ top: 0 });
+}
+
+/* ---------- Help ---------- */
+let helpSteps = 0;
+function openHelp() { helpSteps = 0; renderHelp(); $("#helpModal").hidden = false; $("#helpClose").focus(); }
+function closeHelp() { $("#helpModal").hidden = true; }
+function renderHelp() {
+  const q = state.view === "q" ? state.questions[state.cur] : null;
+  let h = "";
+  if (q) {
+    const r = R(q.id);
+    h += `<section><h3>Hint for question ${state.cur + 1}</h3>`;
+    const stage = r.defStatus === null ? "def" : r.costStatus === null ? "cost" : r.revStatus === null ? "rev" : r.methodStatus === null ? "method" : !r.workStatus ? "work" : null;
+    if (stage) {
+      const info = {
+        def: ["Start by defining the variable: what unknown is the question asking about?", "Variable hint", `The question asks "how many?" The variable stands for the number of ${q.items} sold.`],
+        cost: ["Now write the cost equation.", "Cost hint", q.costHint],
+        rev: ["Now write the revenue equation.", "Revenue hint", q.revHint],
+        method: ["Now choose a method. Use the guide below to decide.", "Method hint", "Both equations are solved for the same thing (dollars). What can you do when two expressions are equal to the same amount?"],
+        work: ["Now start solving.", "Work hint", usesGraph(q) ? "Copy both equations into Desmos. Zoom out until you see the lines cross, then click that point. Desmos shows its coordinates (x, y)." : `Write ${num(q.I)} + ${num(q.c)}x = ${num(q.p)}x. Subtract ${num(q.c)}x from both sides. What number is left in front of x?`],
+      }[stage];
+      h += `<p class="muted">${info[0]}</p>`;
+      if (helpSteps > 0) h += `<div class="hint-steps"><div class="h"><p>${info[1]}</p><div>${esc(info[2])}</div></div></div>`;
+      else h += `<button class="btn" id="hintNext" type="button">Show a hint</button>`;
+    } else {
+      h += `<p class="muted">Each click shows one more step of the solution.</p><div class="hint-steps">${q.steps.slice(0, helpSteps).map((s, i) => `<div class="h"><p>Step ${i + 1}: ${esc(s.t)}</p><div class="m">${M(s.m)}</div></div>`).join("")}</div>`;
+      if (helpSteps < q.steps.length) h += `<button class="btn" id="hintNext" type="button">${helpSteps ? "Show the next step" : "Show the first step"}</button>`;
+      else h += `<p class="muted">That's every step. Type the final answer in the box.</p>`;
+    }
+    h += `</section>`;
+  }
+  h += `<section><h3>Finding the break-even point</h3><div class="guide">
+    <div><span>1. Define your variable</span><b>"Let x = number of items sold"</b></div>
+    <div><span>2. Write the cost equation</span><b>${M("C = \\text{initial} + (\\text{cost per item})x")}</b></div>
+    <div><span>3. Write the revenue equation</span><b>${M("R = (\\text{selling price})x")}</b></div>
+    <div><span>4. Set cost equal to revenue and solve</span><b>${M("C = R")}</b></div>
+    <div><span>5. Interpret</span><b>Whole number of items. Always round UP.</b></div>
+  </div></section>
+  <section><h3>Example from the notes</h3><div class="guide">
+    <div><span>Cost: $10,410 equipment + $2.65 per game</span><b>${M("C = 10{,}410 + 2.65x")}</b></div>
+    <div><span>Revenue: sells for $20 each</span><b>${M("R = 20x")}</b></div>
+    <div><span>Cost = Revenue</span><b>${M("10{,}410 + 2.65x = 20x")}</b></div>
+    <div><span>Subtract 2.65x from both sides</span><b>${M("10{,}410 = 17.35x")}</b></div>
+    <div><span>Divide both sides by 17.35</span><b>${M("x = 600")} games</b></div>
+  </div></section>
+  <section><h3>Why round up?</h3><p>Suppose a company has to sell 34.3 widgets to break even. Would they break even selling only 34? No, they'd still lose a little money. So you always round UP: they need to sell <b>35</b> widgets.</p></section>
+  <section><h3>How to pick the method</h3><div class="guide">
+    <div><span>Both equations solved for the same thing (C = …, R = …)</span><b>Substitution: set them equal</b></div>
+    <div><span>Equations lined up in standard form</span><b>Elimination</b></div>
+    <div><span>Supporting or checking your answer</span><b>Graphing: where the lines cross</b></div>
+  </div><div class="actions" style="margin-top:10px">${desmosLink()}</div></section>
+  <section><h3>How to type answers</h3><div class="typing">
+    <code>17.35</code><span>Decimals</span>
+    <code>10410</code><span>Whole numbers (10,410 and $10,410 work too)</span>
+    <code>10410/17.35</code><span>You can type the division; the box works it out</span>
+    <code>600</code><span>Final answer: a whole number of items. Units are optional.</span>
+  </div></section>
+  <section><h3>Calculator</h3><p>Click <b>Calculator</b> at the top. Type or tap an expression like <code>10410 / 17.35</code>, press <b>=</b>, then round up if it isn't a whole number. <b>Put result in answer box</b> copies the full value into the box you last clicked.</p></section>`;
+  $("#helpBody").innerHTML = h;
+}
+
+/* ---------- Events ---------- */
+document.addEventListener("click", e => {
+  const t = e.target.closest("button"); if (!t) return;
+  const q = state.view === "q" ? state.questions[state.cur] : null;
+  if (t.dataset.copy !== undefined) { copyText(t.dataset.copy, t); return; }
+  if (t.matches(".dot")) { state.cur = +t.dataset.i; state.view = "q"; render(); return; }
+  if (t.id === "helpBtn" || t.hasAttribute("data-help")) { openHelp(); return; }
+  if (t.id === "helpClose") { closeHelp(); return; }
+  if (t.id === "hintNext") { helpSteps++; if (q) { R(q.id).hints++; save(); } renderHelp(); return; }
+  if (t.id === "summaryBtn" || t.id === "toSummary") { state.view = "summary"; render(); window.scrollTo({ top: 0 }); return; }
+  if (t.id === "backQ") { state.view = "q"; render(); return; }
+  if (t.id === "prev") { state.cur--; render(); window.scrollTo({ top: 0 }); return; }
+  if (t.id === "next") { state.cur++; render(); window.scrollTo({ top: 0 }); return; }
+  if (t.dataset.more) { addMore(3, t.dataset.more === "round"); return; }
+  if (t.id === "moreAll") { const w = analyze().filter(r => r.status === "weak"); addMore(Math.min(6, w.length * 2), w.length === 1 && w[0].key === "round"); return; }
+  if (t.id === "restart") {
+    if (t.dataset.confirm) { state = fresh(); Board.reset(); render(); return; }
+    t.dataset.confirm = "1"; t.textContent = "Click again to erase all progress"; t.classList.add("primary"); return;
+  }
+  if (!q) return;
+  const r = R(q.id);
+  if (t.dataset.def !== undefined && r.defStatus === null) { r.defPick = +t.dataset.def; renderQuestion(); save(); return; }
+  if (t.id === "checkDef" && r.defPick !== null) { r.defStatus = q.defs[r.defPick].ok ? "right" : "wrong"; render(); return; }
+  if (t.dataset.cost !== undefined && r.costStatus === null) { r.costPick = +t.dataset.cost; renderQuestion(); save(); return; }
+  if (t.id === "checkCost" && r.costPick !== null) { r.costStatus = q.costs[r.costPick].ok ? "right" : "wrong"; render(); return; }
+  if (t.dataset.rev !== undefined && r.revStatus === null) { r.revPick = +t.dataset.rev; renderQuestion(); save(); return; }
+  if (t.id === "checkRev" && r.revPick !== null) { r.revStatus = q.revs[r.revPick].ok ? "right" : "wrong"; render(); return; }
+  if (t.dataset.method && r.methodStatus === null) { r.method = t.dataset.method; renderQuestion(); save(); return; }
+  if (t.id === "checkMethod" && r.method) {
+    r.methodStatus = methodStatusFor(r.method); r.methodOk = r.methodStatus === "right";
+    render(); setTimeout(() => $("#wk0") && $("#wk0").focus(), 0); return;
+  }
+  if (t.id === "checkWork") { doWork(); return; }
+  if (t.id === "showWork") { r.workStatus = "shown"; if (r.workFirstOk === null) r.workFirstOk = false; render(); setTimeout(() => $("#ans0") && $("#ans0").focus(), 0); return; }
+  if (t.id === "checkAns") { doCheck(); return; }
+  if (t.id === "reveal") { r.revealed = true; r.last = { status: "revealed" }; if (r.firstOk === null) r.firstOk = false; render(); return; }
+});
+let lastInputId = null;
+document.addEventListener("focusin", e => {
+  const c = e.target.classList; if (!c) return;
+  if (c.contains("ans") || c.contains("wk")) lastInputId = e.target.id;
+});
+document.addEventListener("input", e => {
+  if (e.target.classList && e.target.classList.contains("ans")) {
+    const q = state.questions[state.cur]; state.drafts = state.drafts || {};
+    const d = state.drafts[q.id] = state.drafts[q.id] || []; d[+e.target.dataset.field] = e.target.value; save();
+  }
+  if (e.target.classList && e.target.classList.contains("wk")) {
+    const q = state.questions[state.cur]; state.wdrafts = state.wdrafts || {};
+    const d = state.wdrafts[q.id] = state.wdrafts[q.id] || []; d[+e.target.dataset.wk] = e.target.value; save();
+  }
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("#helpModal").hidden) closeHelp();
+  if (e.key === "Enter" && e.target.classList && e.target.classList.contains("ans")) { e.preventDefault(); doCheck(); }
+  if (e.key === "Enter" && e.target.classList && e.target.classList.contains("wk")) { e.preventDefault(); doWork(); }
+});
+$("#helpModal").addEventListener("click", e => { if (e.target.id === "helpModal") closeHelp(); });
+function doWork() {
+  const q = state.questions[state.cur], r = R(q.id);
+  if (!$("#wk0") || r.workStatus) return;
+  const raws = workFields(q).map((f, i) => $("#wk" + i).value);
+  let res;
+  try { res = checkWork(q, raws); } catch (err) { r.workLast = { status: "error", msg: err.message }; render(); return; }
+  r.workTries++;
+  if (r.workFirstOk === null) r.workFirstOk = res.ok;
+  r.workLast = { status: res.ok ? "right" : "wrong", msg: res.msg, close: res.close };
+  if (res.ok) r.workStatus = "right";
+  render();
+  if (res.ok) setTimeout(() => $("#ans0") && $("#ans0").focus(), 0);
+}
+function doCheck() {
+  const q = state.questions[state.cur], r = R(q.id);
+  if (!$("#ans0") || r.solved || r.revealed) return;
+  let res;
+  try { res = checkAnswer(q, $("#ans0").value); } catch (err) { res = { status: "error", msg: err.message }; }
+  r.last = res;
+  if (res.status !== "error") {
+    r.attempts++;
+    if (r.attempts === 1) r.firstOk = res.status === "correct";
+    if (res.round) r.roundIssue = true;
+    if (res.status === "correct") r.solved = true;
+  }
+  render();
+  const again = $("#ans0"); if (again && !again.disabled) { again.focus(); again.setSelectionRange(again.value.length, again.value.length); }
+}
+
+/* ---------- Calculator ---------- */
+const Calc = {
+  ans: 0,
+  open(show) {
+    $("#calc").hidden = !show; $("#calcBtn").setAttribute("aria-expanded", show);
+    $("#calcBtn").classList.toggle("primary", show);
+    if (show) setTimeout(() => $("#calcIn").focus(), 0);
+  },
+  insert(txt) {
+    const inp = $("#calcIn"), s = inp.selectionStart ?? inp.value.length, en = inp.selectionEnd ?? inp.value.length;
+    inp.value = inp.value.slice(0, s) + txt + inp.value.slice(en); const pos = s + txt.length;
+    inp.focus(); inp.setSelectionRange(pos, pos);
+  },
+  run() {
+    const out = $("#calcOut"), raw = $("#calcIn").value.trim();
+    if (!raw) return;
+    try {
+      const s = raw.replace(/[−–—]/g, "-").replace(/[×·]/g, "*").replace(/÷/g, "/").replace(/ans/gi, "(" + this.ans + ")").replace(/sqrt/gi, "√");
+      const vals = ev(parseExpr(tokenize(s)));
+      if (vals.length !== 1) throw new Error("Work out one value at a time (no ±).");
+      if (!isFinite(vals[0])) throw new Error("That isn't a real number. Check for a negative under √ or dividing by 0.");
+      this.ans = +vals[0].toPrecision(12);
+      out.classList.remove("err"); out.textContent = "= " + this.ans;
+    } catch (e) { out.classList.add("err"); out.textContent = e.message; }
+  },
+};
+$("#calcBtn").addEventListener("click", () => Calc.open($("#calc").hidden));
+$("#calcClose").addEventListener("click", () => Calc.open(false));
+$("#calc").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.c !== undefined) Calc.insert(b.dataset.c);
+  const fn = b.dataset.cfn;
+  if (fn === "clear") { $("#calcIn").value = ""; $("#calcOut").textContent = "0"; $("#calcOut").classList.remove("err"); $("#calcIn").focus(); }
+  if (fn === "back") { const i = $("#calcIn"); i.value = i.value.slice(0, -1); i.focus(); }
+  if (fn === "ans") Calc.insert("ANS");
+  if (fn === "eval") Calc.run();
+  if (b.id === "calcUse") {
+    let inp = lastInputId && $("#" + lastInputId);
+    if (!inp || inp.disabled) inp = [...document.querySelectorAll(".ans, .wk")].find(x => !x.disabled);
+    if (!inp) { $("#calcOut").classList.add("err"); $("#calcOut").textContent = "Click an answer box first."; return; }
+    inp.value = "" + Calc.ans; inp.dispatchEvent(new Event("input", { bubbles: true })); inp.focus();
+  }
+});
+$("#calcIn").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); Calc.run(); } e.stopPropagation(); });
+$("#calcIn").addEventListener("input", e => e.stopPropagation());
+
+/* ---------- Whiteboard ---------- */
+const Board = {
+  canvas: $("#canvas"), wrap: $("#canvasWrap"), ctx: null, key: null, boards: {},
+  color: "#18202c", size: 2.5, erase: false, cur: null,
+  init() {
+    this.ctx = this.canvas.getContext("2d");
+    new ResizeObserver(() => this.resize()).observe(this.wrap);
+    const c = this.canvas;
+    c.addEventListener("pointerdown", e => this.down(e));
+    c.addEventListener("pointermove", e => this.move(e));
+    ["pointerup", "pointercancel", "pointerleave"].forEach(ev => c.addEventListener(ev, () => this.up()));
+    document.querySelectorAll(".swatch").forEach(b => b.addEventListener("click", () => {
+      this.color = b.dataset.color; this.erase = false;
+      document.querySelectorAll(".swatch").forEach(x => x.classList.toggle("on", x === b)); $("#eraser").classList.remove("on");
+    }));
+    $("#penThin").addEventListener("click", () => { this.size = 2.5; this.erase = false; this.tools("penThin"); });
+    $("#penThick").addEventListener("click", () => { this.size = 6; this.erase = false; this.tools("penThick"); });
+    $("#eraser").addEventListener("click", () => { this.erase = true; this.tools("eraser"); });
+    $("#undo").addEventListener("click", () => this.undo());
+    $("#clear").addEventListener("click", () => { const b = this.board(); if (!b.strokes.length) return; b.history.push({ clear: b.strokes }); b.strokes = []; this.redraw(); });
+    $("#grid").addEventListener("click", e => { this.wrap.classList.toggle("nogrid"); e.currentTarget.classList.toggle("on"); });
+  },
+  tools(id) { ["penThin", "penThick", "eraser"].forEach(x => $("#" + x).classList.toggle("on", x === id)); },
+  board() { return (this.boards[this.key] = this.boards[this.key] || { strokes: [], history: [] }); },
+  setKey(k, title) { $("#boardTitle").textContent = title; if (this.key === k) return; this.key = k; this.redraw(); },
+  reset() { this.boards = {}; this.redraw(); },
+  resize() {
+    const r = this.wrap.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+    this.canvas.width = Math.max(1, Math.round(r.width * d)); this.canvas.height = Math.max(1, Math.round(r.height * d));
+    this.ctx.setTransform(d, 0, 0, d, 0, 0); this.redraw();
+  },
+  pt(e) { const r = this.canvas.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; },
+  down(e) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    this.canvas.setPointerCapture(e.pointerId);
+    this.cur = { color: this.color, size: this.erase ? 22 : this.size, erase: this.erase, pts: [this.pt(e)] };
+    this.drawStroke(this.cur);
+  },
+  move(e) {
+    if (!this.cur) return;
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+    for (const ce of (evs.length ? evs : [e])) {
+      const p = this.pt(ce), pts = this.cur.pts, last = pts[pts.length - 1];
+      pts.push(p); this.segment(this.cur, last, p);
+    }
+  },
+  up() {
+    if (!this.cur) return;
+    const b = this.board(); b.strokes.push(this.cur); b.history.push({ stroke: true }); this.cur = null;
+  },
+  style(s) {
+    const x = this.ctx; x.globalCompositeOperation = s.erase ? "destination-out" : "source-over";
+    x.strokeStyle = s.color; x.fillStyle = s.color; x.lineWidth = s.size; x.lineCap = "round"; x.lineJoin = "round";
+  },
+  segment(s, a, b) { const x = this.ctx; this.style(s); x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.stroke(); },
+  drawStroke(s) {
+    const x = this.ctx; this.style(s);
+    if (s.pts.length === 1) { x.beginPath(); x.arc(s.pts[0][0], s.pts[0][1], s.size / 2, 0, Math.PI * 2); x.fill(); return; }
+    x.beginPath(); x.moveTo(s.pts[0][0], s.pts[0][1]);
+    for (let i = 1; i < s.pts.length; i++) x.lineTo(s.pts[i][0], s.pts[i][1]);
+    x.stroke();
+  },
+  redraw() {
+    if (!this.ctx) return;
+    const x = this.ctx; x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, this.canvas.width, this.canvas.height); x.restore();
+    if (this.key) this.board().strokes.forEach(s => this.drawStroke(s));
+    x.globalCompositeOperation = "source-over";
+  },
+  undo() {
+    const b = this.board(), h = b.history.pop(); if (!h) return;
+    if (h.clear) b.strokes = h.clear; else b.strokes.pop();
+    this.redraw();
+  },
+};
+
+function measureHeader() { document.documentElement.style.setProperty("--header-h", $("#top").offsetHeight + "px"); }
+new ResizeObserver(measureHeader).observe($("#top"));
+Board.init();
+measureHeader();
+render();
+</script>
+
+</body></html>
